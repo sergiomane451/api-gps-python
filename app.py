@@ -6,7 +6,6 @@ import os
 
 app = FastAPI()
 
-# 🔥 solo último dato
 latest_data = {}
 
 def generar_dato():
@@ -23,17 +22,15 @@ def generar_dato():
         "estado": "OPERATIVO" if random.random() > 0.2 else "INACTIVO"
     }
 
-    print("Actualizado:", latest_data)
-
-# 🚀 endpoint
 @app.get("/gps")
-def get_gps():
+def gps():
     return latest_data
 
-# 🔄 scheduler cada 1 minuto
+generar_dato()
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(generar_dato, "interval", minutes=1)
 scheduler.start()
 
-# generar primer dato
-generar_dato()
+# 🔥 IMPORTANTE PARA RENDER
+port = int(os.environ.get("PORT", 8000))
