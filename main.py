@@ -1,13 +1,16 @@
 from fastapi import FastAPI
+from apscheduler.schedulers.background import BackgroundScheduler
 import random
 from datetime import datetime
-from apscheduler.schedulers.background import BackgroundScheduler
-import os
 
 app = FastAPI()
 
+# 🔥 último dato generado
 latest_data = {}
 
+# -------------------------
+# GENERAR DATO NUEVO
+# -------------------------
 def generar_dato():
     global latest_data
 
@@ -19,18 +22,33 @@ def generar_dato():
         "latitud": -9.189 + random.uniform(-0.005, 0.005),
         "longitud": -77.528 + random.uniform(-0.005, 0.005),
         "velocidad": random.randint(0, 80),
-        "estado": "OPERATIVO" if random.random() > 0.2 else "INACTIVO"
+        "estado": "OPERATIVO"
     }
 
+    print("Nuevo dato generado:", latest_data)
+
+# -------------------------
+# API
+# -------------------------
 @app.get("/gps")
-def gps():
+def get_gps():
     return latest_data
 
+@app.get("/")
+def home():
+    return {
+        "status": "ok",
+        "endpoint": "/gps"
+    }
+
+# -------------------------
+# INICIO
+# -------------------------
+
+# generar primer dato al iniciar
 generar_dato()
 
+# scheduler cada 1 minuto
 scheduler = BackgroundScheduler()
 scheduler.add_job(generar_dato, "interval", minutes=1)
 scheduler.start()
-
-# 🔥 IMPORTANTE PARA RENDER
-port = int(os.environ.get("PORT", 8000))
