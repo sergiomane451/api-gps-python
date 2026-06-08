@@ -5,18 +5,16 @@ from datetime import datetime
 
 app = FastAPI()
 
-# 🔥 último dato generado
-latest_data = {}
+# 🔥 aquí se acumula TODO el historial
+data_store = []
 
 # -------------------------
-# GENERAR DATO NUEVO
+# GENERAR DATO CADA 1 MIN
 # -------------------------
 def generar_dato():
-    global latest_data
-
     now = datetime.now()
 
-    latest_data = {
+    dato = {
         "equipo_id": "CAM_001",
         "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
         "latitud": -9.189 + random.uniform(-0.005, 0.005),
@@ -25,27 +23,29 @@ def generar_dato():
         "estado": "OPERATIVO"
     }
 
-    print("Nuevo dato generado:", latest_data)
+    data_store.append(dato)
+
+    print("Nuevo registro:", dato)
 
 # -------------------------
-# API
+# API: HISTORIAL COMPLETO
 # -------------------------
 @app.get("/gps")
 def get_gps():
-    return latest_data
+    return data_store
 
-@app.get("/")
-def home():
-    return {
-        "status": "ok",
-        "endpoint": "/gps"
-    }
+# -------------------------
+# API: ÚLTIMO REGISTRO
+# -------------------------
+@app.get("/gps/latest")
+def get_latest():
+    return data_store[-1] if data_store else {}
 
 # -------------------------
 # INICIO
 # -------------------------
 
-# generar primer dato al iniciar
+# generar primer dato
 generar_dato()
 
 # scheduler cada 1 minuto
