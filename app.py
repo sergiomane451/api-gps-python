@@ -1,11 +1,12 @@
-from flask import Flask, jsonify
-from apscheduler.schedulers.background import BackgroundScheduler
+from fastapi import FastAPI
 import random
 from datetime import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
 import os
 
-app = Flask(__name__)
+app = FastAPI()
 
+# 🔥 solo último dato
 latest_data = {}
 
 def generar_dato():
@@ -22,20 +23,17 @@ def generar_dato():
         "estado": "OPERATIVO" if random.random() > 0.2 else "INACTIVO"
     }
 
-    print("Dato actualizado:", latest_data)
+    print("Actualizado:", latest_data)
 
-@app.route("/gps", methods=["GET"])
-def gps():
-    return jsonify(latest_data)
+# 🚀 endpoint
+@app.get("/gps")
+def get_gps():
+    return latest_data
 
-# 🔄 Scheduler cada 1 minuto
+# 🔄 scheduler cada 1 minuto
 scheduler = BackgroundScheduler()
 scheduler.add_job(generar_dato, "interval", minutes=1)
 scheduler.start()
 
-# primer dato al iniciar
+# generar primer dato
 generar_dato()
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
